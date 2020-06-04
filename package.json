@@ -1,0 +1,24 @@
+{
+  "name": "dgsin1920-13",
+  "version": "0.1.0",
+  "description": "Proyecto para la asignatura Desarrollo y Gestión de Sistemas de Información en la Nube",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mii-dgsin/DGSIN1920-13.git"
+  },
+  "author": "Enrique Piñero Fuentes",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mii-dgsin/DGSIN1920-13/issues"
+  },
+  "homepage": "https://github.com/mii-dgsin/DGSIN1920-13#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mongodb": "^3.5.8"
+  }
+}
