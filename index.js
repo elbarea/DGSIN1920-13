@@ -7,6 +7,20 @@ var dato = { "datasetid": "luftdaten_pm_bristol", "recordid": "15f58e8c75ca64891
 
 const MongoClient = require('mongodb').MongoClient;
 const dburl = "mongodb+srv://admin:dgsin1920@dgsin1920-13-aire-mrw65.mongodb.net/dgsin1920?retryWrites=true&w=majority";
+
+//Función adaptada, copiada de https://github.com/mii-dgsin/dgsin-contacts-back/blob/master/index.js:63
+function formatSensores(sensores) {
+    return sensores.map((reg) => {
+        delete reg._id
+        return reg;
+    });
+}
+
+function checkFields(reg) {
+    var b = (!reg.sensorid || !reg.fecha || !reg.pm10 || !reg.pm2_5 || !reg.latlong);
+    return b;
+};
+
 var client = MongoClient.connect(dburl, (err, client) => {
 
     if (err) {
@@ -30,6 +44,7 @@ var client = MongoClient.connect(dburl, (err, client) => {
 
 const BASE_API = "/api/v1";
 
+app.use(bp.json());
 
 app.get(BASE_API + "/sensores/loadInitialData", (req, res) => {
 
@@ -68,23 +83,64 @@ app.get(BASE_API + "/sensores/loadInitialData", (req, res) => {
 //Hacer get sobre una colección
 app.get(BASE_API + "/sensores", (req, res) => {
     console.info("Petición GET a /sensores");
-    db.find({}).toArray((err, sensores)=>{
+    db.find({}).toArray((err, sensores) => {
         if (err) {
             console.error("Error obteniendo los datos de la BD: " + err);
             res.sendStatus(500);
         }
         else {
+            var sin_id = formatSensores(sensores);
             console.debug("Mandando registros " + JSON.stringify(sensores, null, 2));
-            res.send(sensores);
+            res.send(sin_id);
 
         }
     });
 
 });
 
+//Post sobre colección para añadir recurso
+app.post(BASE_API + "/sensores",(req, res) => {
+    var nReg = req.body;
+    if (!nReg) {
+        console.warn("Petición POST a /sensores sin cuerpo, mandando 400");
+        res.sendStatus(400);
+    }
+    else {
+        console.info("Petición POST a /sensores con cuerpo: " + JSON.stringify(nReg));
+
+        if (checkFields(nReg)) {
+            console.warn("El registro no está bien formado, mandando 422. Registro recibido: " + nReg);
+            res.sendStatus(422);
+        }
+        else {
+            db.find({"sensorid":nReg.sensorid, "fecha":nReg.fecha}).toArray((err,sensores)=>{
+                if(err){
+                    console.error("Error recuperando datos de la BD: "+err);
+                    res.sendStatus(500);
+                }
+                else{
+                    if(sensores.length > 0){
+                        console.warn("El registro a introducir ya existe. Mandando 409");
+                        res.sendStatus(409);
+                    }
+                    else{
+                        console.debug("Añadiendo registro: "+JSON.stringify(nReg,null,2));
+                        db.insert(nReg);
+                        res.sendStatus(201);
+                    }
+
+                }
+            });
+        }
+
+
+    }
+});
+
+
+
 app.use("/", express.static(path.join(__dirname, "public")));
 
-app.use(bp.json);
 
 app.listen(process.env.PORT || 8080, () => {
     console.log("Servidor listo");
