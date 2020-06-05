@@ -137,6 +137,27 @@ app.post(BASE_API + "/sensores",(req, res) => {
     }
 });
 
+//Delete sobre colección para borrarla
+
+app.delete(BASE_API + "/sensores",(req, res) => {
+    console.info("Petición de DELETE para eliminar colección sensores");
+    db.remove({},{multi:true},(err,result)=>{
+        if(err){
+            console.error("Error eliminando colección de la BD");
+            res.sendStatus(500);
+        }
+        else{
+            var n = result.result.n;
+            if(n == 0){
+                console.warn("No hay registros que eliminar");
+                res.sendStatus(404);
+            }else{
+                console.debug(n + " registros eliminados exitosamente.");
+                res.sendStatus(204);
+            }
+        }
+    });
+});
 
 
 app.use("/", express.static(path.join(__dirname, "public")));
