@@ -237,6 +237,51 @@ app.delete(BASE_API + "/sensores/:id", (res, req) => {
         });
     }
 });
+
+//PUT a un recurso específico
+
+app.put(BASE_API + "/sensores/:id",(res,req)=>{
+
+    var id = req.params.id;
+    var nReg = req.body;
+    if(!id){
+        console.warn("Petición PUT a /sensores/:id sin id, mandando estado 400");
+        res.sendStatus(400);
+    }
+    else if (!nReg){
+        console.warn("Petición PUT a /sensores/:id sin cuerpo, mandando estado 400")
+        res.sendStatus(400);
+    }
+    else{
+        console.info("Petición PUT a /sensores/" + id + " con cuerpo "+ JSON.stringify(nReg,null,2));
+        var b = checkFields(nReg);
+        if(b){
+            console.warn("El cuerpo de la petición no está bien formado: " + JSON.stringify(nReg));
+            console.warn("Mandando estado 422");
+            res.sendStatus(422);
+        }
+        else{
+            db.find({"sensorid":id}).toArray((err,sensores)=>{
+                if(err){
+                    console.error("Error recuperando datos de la BD");
+                    res.sendStatus(500);
+                }
+                else{
+                    if(sensores.length > 0){
+                        db.update({"sensorid":id},nReg);
+                        console.debug("Actualizando registro con id " + id);
+                        res.send(nReg);
+                    }
+                    else{
+                        console.warn("No hay ningún registro asociado al sensor con id "+id);
+                        res.sendStatus(404);
+                    }
+                }
+            })
+        }
+    }
+});
+
 app.use("/", express.static(path.join(__dirname, "public")));
 
 
