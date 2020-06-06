@@ -99,10 +99,10 @@ app.get(BASE_API + "/sensores", (req, res) => {
 });
 
 //Post sobre colección para añadir recurso
-app.post(BASE_API + "/sensores",(req, res) => {
+app.post(BASE_API + "/sensores", (req, res) => {
     var nReg = req.body;
     if (!nReg) {
-        console.warn("Petición POST a /sensores sin cuerpo, mandando 400");
+        console.warn("Petición POST a /sensores sin cuerpo, mandando estado 400");
         res.sendStatus(400);
     }
     else {
@@ -113,18 +113,18 @@ app.post(BASE_API + "/sensores",(req, res) => {
             res.sendStatus(422);
         }
         else {
-            db.find({"sensorid":nReg.sensorid, "fecha":nReg.fecha}).toArray((err,sensores)=>{
-                if(err){
-                    console.error("Error recuperando datos de la BD: "+err);
+            db.find({ "sensorid": nReg.sensorid, "fecha": nReg.fecha }).toArray((err, sensores) => {
+                if (err) {
+                    console.error("Error recuperando datos de la BD: " + err);
                     res.sendStatus(500);
                 }
-                else{
-                    if(sensores.length > 0){
-                        console.warn("El registro a introducir ya existe. Mandando 409");
+                else {
+                    if (sensores.length > 0) {
+                        console.warn("El registro a introducir ya existe. Mandando estado 409");
                         res.sendStatus(409);
                     }
-                    else{
-                        console.debug("Añadiendo registro: "+JSON.stringify(nReg,null,2));
+                    else {
+                        console.debug("Añadiendo registro: " + JSON.stringify(nReg, null, 2));
                         db.insert(nReg);
                         res.sendStatus(201);
                     }
@@ -139,19 +139,19 @@ app.post(BASE_API + "/sensores",(req, res) => {
 
 //Delete sobre colección para borrarla
 
-app.delete(BASE_API + "/sensores",(req, res) => {
+app.delete(BASE_API + "/sensores", (req, res) => {
     console.info("Petición de DELETE para eliminar colección sensores");
-    db.remove({},{multi:true},(err,result)=>{
-        if(err){
+    db.remove({}, { multi: true }, (err, result) => {
+        if (err) {
             console.error("Error eliminando colección de la BD");
             res.sendStatus(500);
         }
-        else{
+        else {
             var n = result.result.n;
-            if(n == 0){
+            if (n == 0) {
                 console.warn("No hay registros que eliminar");
                 res.sendStatus(404);
-            }else{
+            } else {
                 console.debug(n + " registros eliminados exitosamente.");
                 res.sendStatus(204);
             }
@@ -159,7 +159,84 @@ app.delete(BASE_API + "/sensores",(req, res) => {
     });
 });
 
+//PUT sobre colección -- no permitido
 
+app.put(BASE_API + "/sensores", (req, res) => {
+    console.warn("Petición PUT a /sensores, operación no permitida, mandando estado 405");
+    res.sendStatus(405);
+
+});
+
+//GET sobre recurso específico
+//El GET se haría sobre un id de sensor, y se devuelven
+//todas las mediciones disponibles de dicho sensor
+
+app.get(BASE_API + "/sensores/:id", (req, res) => {
+    var id = req.params.id;
+    if (!id) {
+        console.warn("Petición de recurso específico sin id");
+        res.sendStatus(400);
+    }
+    else {
+        console.info("Petición recibida para servir /sensores/" + id);
+        db.find({ "sensorid": id }).toArray((err, sensores) => {
+            if (err) {
+                console.error("Error de la BD");
+                res.sendStatus(500);
+            }
+            else {
+                if (sensores.length > 0) {
+                    var respuesta = formatSensores(sensores);
+                    console.debug("Mandando registros correspondientes al sensor " + id);
+                    res.send(respuesta);
+                }
+                else {
+                    console.warn("No existe un sensor con el id pedido");
+                    res.sendStatus(404);
+                }
+            }
+        });
+    }
+});
+
+//POST a un recurso específico -- no permitido
+app.post(BASE_API + "/sensores/:id", (res, req) => {
+    var id = req.params.id;
+    console.warn("Petición POST a /sensores/" + id + "; no permitido, mandando estado 405");
+    res.sendStatus(405);
+});
+
+//DELETE a un recurso específico
+app.delete(BASE_API + "/sensores/:id", (res, req) => {
+    var id = req.params.id;
+    if (!name) {
+        console.warn("Petición DELETE a /sensores/:id sin id, mandando estado 400");
+        res.sendStatus(400);
+    }
+    else {
+        console.info("Petición DELETE a /sensores/" + id);
+        db.remove({ "sensorid": id }, {}, (err, res) => {
+            if (err) {
+                console.error("Error eliminando registros de la BD");
+                res.sendStatus(500);
+            }
+            else {
+                var n = result.result.n;
+                if(n == 0){
+                    console.warn("No se ha eliminado nignún registro. Compruebe el id");
+                    res.sendStatus(404);
+                }
+                else{
+                    console.debug("Registros eliminados: "+n);
+                    res.sendStatus(204);
+                }
+                
+                
+
+            }
+        });
+    }
+});
 app.use("/", express.static(path.join(__dirname, "public")));
 
 
