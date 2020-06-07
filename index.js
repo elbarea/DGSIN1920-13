@@ -232,7 +232,7 @@ app.get(BASE_API + "/sensores/:id/:fecha", (req, res) => {
                 else {
                     if (reg.length > 0) {
                         var respuesta = formatSensores(reg);
-                        console.debug("Mandando registro correspondiente al sensor " + id + " con fecha "+ fecha);
+                        console.debug("Mandando registro correspondiente al sensor " + id + " con fecha " + fecha);
                         res.send(reg);
                     }
                     else {
@@ -253,7 +253,7 @@ app.post(BASE_API + "/sensores/:id", (res, req) => {
     res.sendStatus(405);
 });
 
-//DELETE a un recurso específico
+//DELETE a un recurso específico -- solo id
 app.delete(BASE_API + "/sensores/:id", (res, req) => {
     var id = req.params.id;
     if (!name) {
@@ -285,22 +285,65 @@ app.delete(BASE_API + "/sensores/:id", (res, req) => {
     }
 });
 
-//PUT a un recurso específico
-
-app.put(BASE_API + "/sensores/:id", (res, req) => {
-
+//DELETE sobre recurso específico -- id y fecha
+app.delete(BASE_API + "/sensores/:id/:fecha", (req, res) => {
     var id = req.params.id;
-    var nReg = req.body;
-    if (!id) {
-        console.warn("Petición PUT a /sensores/:id sin id, mandando estado 400");
-        res.sendStatus(400);
-    }
-    else if (!nReg) {
-        console.warn("Petición PUT a /sensores/:id sin cuerpo, mandando estado 400")
+    var fecha = req.params.fecha;
+
+    if (!id || !fecha) {
+        console.warn("Petición DELETE de recurso específico sin id o sin fecha");
         res.sendStatus(400);
     }
     else {
-        console.info("Petición PUT a /sensores/" + id + " con cuerpo " + JSON.stringify(nReg, null, 2));
+        console.info("Petición DELETE recibida para eliminar registro" + id + "/" + fecha);
+
+        if (!checkDateFormat(fecha)) {
+            console.warn("Formato de fecha incorrecto, mandando estdo 422");
+            res.sendStatus(422);
+        }
+        else {
+            db.remove({ "sensorid": id, "fecha": fecha }, (err, result) => {
+                if (err) {
+                    console.error("Error de acceso a la BD");
+                    res.sendStatus(500);
+                }
+                else {
+                    var n = result.result.n;
+                    if (n == 0) {
+                        var respuesta = formatSensores(reg);
+                        console.warn("No se ha eliminado nignún registro. Compruebe el id y la fecha introducidas");
+                        res.sendStatus(404);
+                    }
+                    else {
+                        console.debug("Registro con id " + id + " y fecha " + fecha + " eliminado");
+                        res.sendStatus(204);
+                    }
+                }
+            });
+        }
+
+    }
+});
+
+//PUT a un recurso específico con id y fecha
+
+app.put(BASE_API + "/sensores/:id/:fecha", (req, res) => {
+
+    var id = req.params.id;
+    var fecha = req.params.fecha;
+    var nReg = req.body;
+    if (!id || !fecha) {
+        console.warn("Petición PUT sobre recurso específico sin id o sin fecha");
+        res.sendStatus(400);
+    }
+    else if (!nReg) {
+        console.warn("Petición PUT a /sensores/" + id + "/" + fecha + " sin cuerpo, mandando estado 400")
+        res.sendStatus(400);
+    }
+    else {
+        console.info("Petición PUT a /sensores/" + id + "/" + fecha + " con cuerpo " + JSON.stringify(nReg, null, 2));
+        var c1 = checkDateFormat(fecha);
+        var c2 = checkDateFormat(nReg.fecha);
         var b = checkFields(nReg);
         if (b) {
             console.warn("El cuerpo de la petición no está bien formado: " + JSON.stringify(nReg));
@@ -308,23 +351,28 @@ app.put(BASE_API + "/sensores/:id", (res, req) => {
             res.sendStatus(422);
         }
         else {
-            db.find({ "sensorid": id }).toArray((err, sensores) => {
-                if (err) {
-                    console.error("Error recuperando datos de la BD");
-                    res.sendStatus(500);
-                }
-                else {
-                    if (sensores.length > 0) {
-                        db.update({ "sensorid": id }, nReg);
-                        console.debug("Actualizando registro con id " + id);
-                        res.send(nReg);
+            if (!c1 || !c2) {
+                console.warn("El formato de la fecha no es correcto");
+                res.sendStatus(422);
+            } else {
+                db.find({ "sensorid": id, "fecha": fecha }).toArray((err, sensores) => {
+                    if (err) {
+                        console.error("Error recuperando datos de la BD");
+                        res.sendStatus(500);
                     }
                     else {
-                        console.warn("No hay ningún registro asociado al sensor con id " + id);
-                        res.sendStatus(404);
+                        if (sensores.length > 0) {
+                            db.update({ "sensorid": id, "fecha": fecha }, nReg);
+                            console.debug("Actualizando registro con id " + id + " y fecha " + fecha);
+                            res.send(nReg);
+                        }
+                        else {
+                            console.warn("No hay ningún registro asociado al sensor con id " + id + " y fecha " + fecha);
+                            res.sendStatus(404);
+                        }
                     }
-                }
-            })
+                })
+            }
         }
     }
 });
