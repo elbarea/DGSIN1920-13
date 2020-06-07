@@ -21,6 +21,12 @@ function checkFields(reg) {
     return b;
 };
 
+function checkDateFormat(fecha) {
+    var regex_fecha = RegExp(/^(2\d{3})[-](([0][1-9])|([1][0-2]))[-](([0][1-9])|([12][0-9])|([3][01]))[T](([01][0-9])|([2][0-3]))[:]([0-5][0-9])[:]([0-5][0-9])Z$/);
+    var check = regex_fecha.test(fecha);
+    return check;
+};
+
 var client = MongoClient.connect(dburl, (err, client) => {
 
     if (err) {
@@ -167,14 +173,14 @@ app.put(BASE_API + "/sensores", (req, res) => {
 
 });
 
-//GET sobre recurso específico
+
 //El GET se haría sobre un id de sensor, y se devuelven
 //todas las mediciones disponibles de dicho sensor
 
 app.get(BASE_API + "/sensores/:id", (req, res) => {
     var id = req.params.id;
     if (!id) {
-        console.warn("Petición de recurso específico sin id");
+        console.warn("Petición GET de recurso específico sin id");
         res.sendStatus(400);
     }
     else {
@@ -196,6 +202,47 @@ app.get(BASE_API + "/sensores/:id", (req, res) => {
                 }
             }
         });
+    }
+});
+
+//GET sobre recurso específico
+//Hay que especificar id de sensor, fecha y hora de medición
+
+app.get(BASE_API + "/sensores/:id/:fecha", (req, res) => {
+    var id = req.params.id;
+    var fecha = req.params.fecha;
+
+    if (!id || !fecha) {
+        console.warn("Petición GET de recurso específico sin id o sin fecha");
+        res.sendStatus(400);
+    }
+    else {
+        console.info("Petición GET recibida para servir /sensores/" + id + "/" + fecha);
+
+        if (!checkDateFormat(fecha)) {
+            console.warn("Formato de fecha incorrecto, mandando estdo 422");
+            res.sendStatus(422);
+        }
+        else {
+            db.find({ "sensorid": id, "fecha": fecha }).toArray((err, reg) => {
+                if (err) {
+                    console.error("Error de acceso a la BD");
+                    res.sendStatus(500);
+                }
+                else {
+                    if (reg.length > 0) {
+                        var respuesta = formatSensores(reg);
+                        console.debug("Mandando registro correspondiente al sensor " + id + " con fecha "+ fecha);
+                        res.send(reg);
+                    }
+                    else {
+                        console.warn("No existe un registro con id de sensor: " + id + " y fecha: " + fecha);
+                        res.sendStatus(404);
+                    }
+                }
+            });
+        }
+
     }
 });
 
@@ -222,16 +269,16 @@ app.delete(BASE_API + "/sensores/:id", (res, req) => {
             }
             else {
                 var n = result.result.n;
-                if(n == 0){
+                if (n == 0) {
                     console.warn("No se ha eliminado nignún registro. Compruebe el id");
                     res.sendStatus(404);
                 }
-                else{
-                    console.debug("Registros eliminados: "+n);
+                else {
+                    console.debug("Registros eliminados: " + n);
                     res.sendStatus(204);
                 }
-                
-                
+
+
 
             }
         });
@@ -240,40 +287,40 @@ app.delete(BASE_API + "/sensores/:id", (res, req) => {
 
 //PUT a un recurso específico
 
-app.put(BASE_API + "/sensores/:id",(res,req)=>{
+app.put(BASE_API + "/sensores/:id", (res, req) => {
 
     var id = req.params.id;
     var nReg = req.body;
-    if(!id){
+    if (!id) {
         console.warn("Petición PUT a /sensores/:id sin id, mandando estado 400");
         res.sendStatus(400);
     }
-    else if (!nReg){
+    else if (!nReg) {
         console.warn("Petición PUT a /sensores/:id sin cuerpo, mandando estado 400")
         res.sendStatus(400);
     }
-    else{
-        console.info("Petición PUT a /sensores/" + id + " con cuerpo "+ JSON.stringify(nReg,null,2));
+    else {
+        console.info("Petición PUT a /sensores/" + id + " con cuerpo " + JSON.stringify(nReg, null, 2));
         var b = checkFields(nReg);
-        if(b){
+        if (b) {
             console.warn("El cuerpo de la petición no está bien formado: " + JSON.stringify(nReg));
             console.warn("Mandando estado 422");
             res.sendStatus(422);
         }
-        else{
-            db.find({"sensorid":id}).toArray((err,sensores)=>{
-                if(err){
+        else {
+            db.find({ "sensorid": id }).toArray((err, sensores) => {
+                if (err) {
                     console.error("Error recuperando datos de la BD");
                     res.sendStatus(500);
                 }
-                else{
-                    if(sensores.length > 0){
-                        db.update({"sensorid":id},nReg);
+                else {
+                    if (sensores.length > 0) {
+                        db.update({ "sensorid": id }, nReg);
                         console.debug("Actualizando registro con id " + id);
                         res.send(nReg);
                     }
-                    else{
-                        console.warn("No hay ningún registro asociado al sensor con id "+id);
+                    else {
+                        console.warn("No hay ningún registro asociado al sensor con id " + id);
                         res.sendStatus(404);
                     }
                 }
