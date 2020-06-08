@@ -16,6 +16,16 @@ function formatSensores(sensores) {
     });
 }
 
+//Función para comprobar si un objeto está vacío
+//Necesaria porque cuando se mandan peticiones sin cuerpo
+//el cuerpo es {}, el cual es un objeto (!obj devuelve false)
+//pero el objeto está vacío. 
+//Código extraído de https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
+function isEmpty(obj){
+    return (Object.keys(obj).length === 0 && obj.constructor === Object);
+}
+
+
 function checkFields(reg) {
     var b = (!reg.sensorid || !reg.fecha || !reg.pm10 || !reg.pm2_5 || !reg.latlong);
     return b;
@@ -107,7 +117,7 @@ app.get(BASE_API + "/sensores", (req, res) => {
 //Post sobre colección para añadir recurso
 app.post(BASE_API + "/sensores", (req, res) => {
     var nReg = req.body;
-    if (!nReg) {
+    if (isEmpty(nReg)) {
         console.warn("Petición POST a /sensores sin cuerpo, mandando estado 400");
         res.sendStatus(400);
     }
@@ -247,28 +257,29 @@ app.get(BASE_API + "/sensores/:id/:fecha", (req, res) => {
 });
 
 //POST a un recurso específico -- no permitido
-app.post(BASE_API + "/sensores/:id", (res, req) => {
+app.post(BASE_API + "/sensores/:id", (req, res) => {
     var id = req.params.id;
     console.warn("Petición POST a /sensores/" + id + "; no permitido, mandando estado 405");
     res.sendStatus(405);
 });
 
-app.post(BASE_API + "/sensores/:id/:fecha", (res, req) => {
+app.post(BASE_API + "/sensores/:id/:fecha", (req, res) => {
     var id = req.params.id;
+    var fecha = req.params.fecha;
     console.warn("Petición POST a /sensores/" + id + " /" + fecha + "; no permitido, mandando estado 405");
     res.sendStatus(405);
 });
 
 //DELETE a un recurso específico -- solo id
-app.delete(BASE_API + "/sensores/:id", (res, req) => {
+app.delete(BASE_API + "/sensores/:id", (req, res) => {
     var id = req.params.id;
-    if (!name) {
+    if (!id) {
         console.warn("Petición DELETE a /sensores/:id sin id, mandando estado 400");
         res.sendStatus(400);
     }
     else {
         console.info("Petición DELETE a /sensores/" + id);
-        db.remove({ "sensorid": id }, {}, (err, res) => {
+        db.remove({ "sensorid": id }, {}, (err, result) => {
             if (err) {
                 console.error("Error eliminando registros de la BD");
                 res.sendStatus(500);
@@ -316,7 +327,6 @@ app.delete(BASE_API + "/sensores/:id/:fecha", (req, res) => {
                 else {
                     var n = result.result.n;
                     if (n == 0) {
-                        var respuesta = formatSensores(reg);
                         console.warn("No se ha eliminado nignún registro. Compruebe el id y la fecha introducidas");
                         res.sendStatus(404);
                     }
@@ -342,7 +352,7 @@ app.put(BASE_API + "/sensores/:id/:fecha", (req, res) => {
         console.warn("Petición PUT sobre recurso específico sin id o sin fecha");
         res.sendStatus(400);
     }
-    else if (!nReg) {
+    else if (isEmpty(nReg)) {
         console.warn("Petición PUT a /sensores/" + id + "/" + fecha + " sin cuerpo, mandando estado 400")
         res.sendStatus(400);
     }
