@@ -220,7 +220,7 @@ app.get(BASE_API + "/sensores/:id/:fecha", (req, res) => {
         console.info("Petición GET recibida para servir /sensores/" + id + "/" + fecha);
 
         if (!checkDateFormat(fecha)) {
-            console.warn("Formato de fecha incorrecto, mandando estdo 422");
+            console.warn("Formato de fecha incorrecto, mandando estado 422");
             res.sendStatus(422);
         }
         else {
@@ -250,6 +250,12 @@ app.get(BASE_API + "/sensores/:id/:fecha", (req, res) => {
 app.post(BASE_API + "/sensores/:id", (res, req) => {
     var id = req.params.id;
     console.warn("Petición POST a /sensores/" + id + "; no permitido, mandando estado 405");
+    res.sendStatus(405);
+});
+
+app.post(BASE_API + "/sensores/:id/:fecha", (res, req) => {
+    var id = req.params.id;
+    console.warn("Petición POST a /sensores/" + id + " /" + fecha + "; no permitido, mandando estado 405");
     res.sendStatus(405);
 });
 
