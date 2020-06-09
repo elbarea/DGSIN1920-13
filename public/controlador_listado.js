@@ -33,6 +33,17 @@ angular.module("calidadAire")
                 }
             });
         }
+
+        $scope.crearRegistro = function crearRecurso() {
+            $http.post(base_url, $scope.nReg).then((res) => {
+                if (res.status == 201) {
+                    console.log("Recurso añadido:" + JSON.stringify($scope.nReg, null, 2));
+                    $window.alert("Registro añadido satisfactoriamente");
+                    listarRegistros();
+                }
+
+            });
+        }
         console.log("Controlador para listar todos los recursos listo.");
         listarRegistros();
     }]);
