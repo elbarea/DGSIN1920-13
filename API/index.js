@@ -1,6 +1,5 @@
-var path = require("path");
+
 var bp = require("body-parser");
-var express = require("express")
 
 const BASE_API = "/api/v1";
 
@@ -37,7 +36,6 @@ module.exports.register = function (app, db) {
 
 
     app.use(bp.json());
-    app.use("/", express.static(path.join(__dirname, "public")));
 
     app.get(BASE_API + "/sensores/docs",(req,res)=>{
         res.redirect("https://martian-shuttle-476641.postman.co/collections/11617864-f1285501-c876-4dae-b935-443bc6dfae74?version=latest&workspace=0e638d6e-e75c-43d4-84d6-bdc36e284504");
