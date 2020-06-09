@@ -4,12 +4,11 @@ angular.module("calidadAire", ["ngRoute"]).config(function ($routeProvider) {
             templateUrl: "static.html",
         }
     )
-    /*.when("/contact/:name",
-        {
-            templateUrl: "edit.html",
-            controller: "EditCtrl"
-        }
-    );
+        .when("/list",
+            {
+                templateUrl: "listado.html",
+                controller:"controlador_listado"
+            });
 
-    console.log("App initialized and configured");*/
+    console.log("Aplicación cargada y configurada correctamente");
 });

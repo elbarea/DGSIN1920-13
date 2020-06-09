@@ -1,12 +1,40 @@
-<html>
-
 <head>
     <title>Listado de todas las mediciones</title>
-   
 </head>
-
-<body>
-
-</body>
-
-</html>
+<h1>Lista de mediciones</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <td>Id sensor</td>
+            <td>Fecha</td>
+            <td>PM10</td>
+            <td>PM2.5</td>
+            <td>Latitud/Longitud</td>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr ng-repeat="r in registros">
+            <td><a href="/#!/registro/{{r.sensorid}}">{{ r.sensorid }}</a></td>
+            <td>{{ r.fecha }}</td>
+            <td>{{ r.pm10 }}</td>
+            <td>{{ r.pm2_5 }}</td>
+            <td>{{ r.latlong }}</td>
+            <td><button class="btn btn-danger" ng-click="eliminarRegistro(r.sensorid,r.fecha)">Delete</button></td>
+        </tr>
+        <tr>
+            <td><input class="form-control" ng-model="nReg.id" /></td>
+            <td><input class="form-control" ng-model="nReg.fecha" /></td>
+            <td><input class="form-control" ng-model="nReg.pm10" /></td>
+            <td><input class="form-control" ng-model="nReg.pm2_5" /></td>
+            <td><input class="form-control" ng-model="nReg.latlong" /></td>
+            <td><button class="btn btn-primary" ng-click="addContact()">Add</button></td>
+        </tr>
+        <tr>
+            <td><button class="btn btn-danger" ng-click="eliminarTodo()">Delete all</button></td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+        </tr>
+    </tbody>
+</table>
