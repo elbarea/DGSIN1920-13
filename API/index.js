@@ -1,3 +1,7 @@
+var path = require("path");
+var bp = require("body-parser");
+var express = require("express")
+
 const BASE_API = "/api/v1";
 
 //Función adaptada, copiada de https://github.com/mii-dgsin/dgsin-contacts-back/blob/master/index.js:63
@@ -13,7 +17,7 @@ function formatSensores(sensores) {
 //el cuerpo es {}, el cual es un objeto (!obj devuelve false)
 //pero el objeto está vacío. 
 //Código extraído de https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
-function isEmpty(obj){
+function isEmpty(obj) {
     return (Object.keys(obj).length === 0 && obj.constructor === Object);
 }
 
@@ -28,7 +32,16 @@ function checkDateFormat(fecha) {
     var check = regex_fecha.test(fecha);
     return check;
 };
-module.exports.register = function(app,db){
+module.exports.register = function (app, db) {
+
+
+
+    app.use(bp.json());
+    app.use("/", express.static(path.join(__dirname, "public")));
+
+    app.get(BASE_API + "/sensores/docs",(req,res)=>{
+        res.redirect("https://martian-shuttle-476641.postman.co/collections/11617864-f1285501-c876-4dae-b935-443bc6dfae74?version=latest&workspace=0e638d6e-e75c-43d4-84d6-bdc36e284504");
+    });
 
     app.get(BASE_API + "/sensores/loadInitialData", (req, res) => {
 
@@ -42,7 +55,7 @@ module.exports.register = function(app,db){
                     var pm10 = jsondb[i].fields.pm10;
                     var pm2_5 = jsondb[i].fields.pm2_5;
                     var latlong = jsondb[i].fields.geo_point_2d;
-    
+
                     var entrada = {
                         "sensorid": sensorid,
                         "fecha": fecha,
@@ -50,7 +63,7 @@ module.exports.register = function(app,db){
                         "pm2_5": pm2_5,
                         "latlong": latlong[0] + ", " + latlong[1]
                     }
-    
+
                     db.insert(entrada);
                 }
                 console.log("Inserción terminada");
@@ -62,8 +75,8 @@ module.exports.register = function(app,db){
             }
         });
     });
-    
-    
+
+
     //Hacer get sobre una colección
     app.get(BASE_API + "/sensores", (req, res) => {
         console.info("Petición GET a /sensores");
@@ -76,12 +89,12 @@ module.exports.register = function(app,db){
                 var sin_id = formatSensores(sensores);
                 console.debug("Mandando registros " + JSON.stringify(sensores, null, 2));
                 res.send(sin_id);
-    
+
             }
         });
-    
+
     });
-    
+
     //Post sobre colección para añadir recurso
     app.post(BASE_API + "/sensores", (req, res) => {
         var nReg = req.body;
@@ -91,7 +104,7 @@ module.exports.register = function(app,db){
         }
         else {
             console.info("Petición POST a /sensores con cuerpo: " + JSON.stringify(nReg));
-    
+
             if (checkFields(nReg)) {
                 console.warn("El registro no está bien formado, mandando 422. Registro recibido: " + nReg);
                 res.sendStatus(422);
@@ -112,17 +125,17 @@ module.exports.register = function(app,db){
                             db.insert(nReg);
                             res.sendStatus(201);
                         }
-    
+
                     }
                 });
             }
-    
-    
+
+
         }
     });
-    
+
     //Delete sobre colección para borrarla
-    
+
     app.delete(BASE_API + "/sensores", (req, res) => {
         console.info("Petición de DELETE para eliminar colección sensores");
         db.remove({}, { multi: true }, (err, result) => {
@@ -142,19 +155,19 @@ module.exports.register = function(app,db){
             }
         });
     });
-    
+
     //PUT sobre colección -- no permitido
-    
+
     app.put(BASE_API + "/sensores", (req, res) => {
         console.warn("Petición PUT a /sensores, operación no permitida, mandando estado 405");
         res.sendStatus(405);
-    
+
     });
-    
-    
+
+
     //El GET se haría sobre un id de sensor, y se devuelven
     //todas las mediciones disponibles de dicho sensor
-    
+
     app.get(BASE_API + "/sensores/:id", (req, res) => {
         var id = req.params.id;
         if (!id) {
@@ -182,21 +195,21 @@ module.exports.register = function(app,db){
             });
         }
     });
-    
+
     //GET sobre recurso específico
     //Hay que especificar id de sensor, fecha y hora de medición
-    
+
     app.get(BASE_API + "/sensores/:id/:fecha", (req, res) => {
         var id = req.params.id;
         var fecha = req.params.fecha;
-    
+
         if (!id || !fecha) {
             console.warn("Petición GET de recurso específico sin id o sin fecha");
             res.sendStatus(400);
         }
         else {
             console.info("Petición GET recibida para servir /sensores/" + id + "/" + fecha);
-    
+
             if (!checkDateFormat(fecha)) {
                 console.warn("Formato de fecha incorrecto, mandando estado 422");
                 res.sendStatus(422);
@@ -220,24 +233,24 @@ module.exports.register = function(app,db){
                     }
                 });
             }
-    
+
         }
     });
-    
+
     //POST a un recurso específico -- no permitido
     app.post(BASE_API + "/sensores/:id", (req, res) => {
         var id = req.params.id;
         console.warn("Petición POST a /sensores/" + id + "; no permitido, mandando estado 405");
         res.sendStatus(405);
     });
-    
+
     app.post(BASE_API + "/sensores/:id/:fecha", (req, res) => {
         var id = req.params.id;
         var fecha = req.params.fecha;
         console.warn("Petición POST a /sensores/" + id + " /" + fecha + "; no permitido, mandando estado 405");
         res.sendStatus(405);
     });
-    
+
     //DELETE a un recurso específico -- solo id
     app.delete(BASE_API + "/sensores/:id", (req, res) => {
         var id = req.params.id;
@@ -262,26 +275,26 @@ module.exports.register = function(app,db){
                         console.debug("Registros eliminados: " + n);
                         res.sendStatus(204);
                     }
-    
-    
-    
+
+
+
                 }
             });
         }
     });
-    
+
     //DELETE sobre recurso específico -- id y fecha
     app.delete(BASE_API + "/sensores/:id/:fecha", (req, res) => {
         var id = req.params.id;
         var fecha = req.params.fecha;
-    
+
         if (!id || !fecha) {
             console.warn("Petición DELETE de recurso específico sin id o sin fecha");
             res.sendStatus(400);
         }
         else {
             console.info("Petición DELETE recibida para eliminar registro" + id + "/" + fecha);
-    
+
             if (!checkDateFormat(fecha)) {
                 console.warn("Formato de fecha incorrecto, mandando estdo 422");
                 res.sendStatus(422);
@@ -305,14 +318,14 @@ module.exports.register = function(app,db){
                     }
                 });
             }
-    
+
         }
     });
-    
+
     //PUT a un recurso específico con id y fecha
-    
+
     app.put(BASE_API + "/sensores/:id/:fecha", (req, res) => {
-    
+
         var id = req.params.id;
         var fecha = req.params.fecha;
         var nReg = req.body;
@@ -360,4 +373,7 @@ module.exports.register = function(app,db){
             }
         }
     });
+
+
+
 }
