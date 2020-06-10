@@ -7,7 +7,12 @@ angular.module("calidadAire", ["ngRoute"]).config(function ($routeProvider) {
         .when("/list",
             {
                 templateUrl: "listado.html",
-                controller:"controlador_listado"
+                controller: "controlador_listado"
+            })
+        .when("/sensor/:id/:fecha",
+            {
+                templateUrl: "edicion.html",
+                controller: "controlador_edicion"
             });
 
     console.log("Aplicación cargada y configurada correctamente");

@@ -1,0 +1,21 @@
+<h1>Editar registro</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <td>Id sensor</td>
+            <td>Fecha</td>
+            <td>PM10</td>
+            <td>PM2.5</td>
+            <td>Latitud/Longitud</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{Reg.sensorid}}</td>
+            <td>{{Reg.fecha}}</td>
+            <td><input class="form-control" ng-model="Reg.pm10" /></td>
+            <td><input class="form-control" ng-model="Reg.pm2_5" /></td>
+            <td><input class="form-control" ng-model="Reg.latlong" /></td>
+            <td><button class="btn btn-primary" ng-click="actualizarRegistro()">Actualizar</button></td>
+        </tr>
+    </tbody>
