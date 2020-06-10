@@ -9,11 +9,19 @@ angular.module("calidadAire", ["ngRoute"]).config(function ($routeProvider) {
                 templateUrl: "listado.html",
                 controller: "controlador_listado"
             })
+        .when("/sensor/:id",
+            {
+                templateUrl: "sensor.html",
+                controller: "controlador_sensor"
+            })
         .when("/sensor/:id/:fecha",
             {
                 templateUrl: "edicion.html",
                 controller: "controlador_edicion"
-            });
+            })
+
+
+        ;
 
     console.log("Aplicación cargada y configurada correctamente");
 });

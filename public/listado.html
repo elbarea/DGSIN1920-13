@@ -13,8 +13,8 @@
     <tbody>
         
         <tr ng-repeat="r in registros">
-            <td><a href="/#!/sensor/{{r.sensorid}}/{{r.fecha}}">{{ r.sensorid }}</a></td>
-            <td>{{ r.fecha }}</td>
+            <td><a href="/#!/sensor/{{r.sensorid}}/">{{ r.sensorid }}</a></td>
+            <td><a href="/#!/sensor/{{r.sensorid}}/{{r.fecha}}">{{ r.fecha }}</a></td>
             <td>{{ r.pm10 }}</td>
             <td>{{ r.pm2_5 }}</td>
             <td>{{ r.latlong }}</td>
