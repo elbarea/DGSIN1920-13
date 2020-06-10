@@ -18,7 +18,7 @@ angular.module("calidadAire")
                 if (res.status == 204) {
                     console.log("Registros eliminados");
                     $window.alert("Todos los registros eliminados exitosamente");
-                    listarRegistros();
+                    $scope.registros = [];
                 }
                 else {
                 }
