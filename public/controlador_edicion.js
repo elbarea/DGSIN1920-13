@@ -2,7 +2,7 @@ angular.module("calidadAire")
     .controller("controlador_edicion", ["$scope", "$http", "$window", "$routeParams", "$location", function ($scope, $http, $window, $routeParams, $location) {
         var id = $routeParams.id;
         var fecha = $routeParams.fecha;
-        var base_url = " /api/v1/sensores";
+        var base_url = "/api/v1/sensores";
         var url_recurso = base_url + "/" + id + "/" + fecha;
         function listarRecurso() {
             $http.get(url_recurso).then(function onSuccess(res) {
@@ -49,6 +49,7 @@ angular.module("calidadAire")
 
                 });
         }
+        console.log("Controlador para editar recursos listo");
         listarRecurso();
 
     }]);

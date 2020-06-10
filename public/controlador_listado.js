@@ -1,6 +1,6 @@
 angular.module("calidadAire")
     .controller("controlador_listado", ["$scope", "$http", "$window", function ($scope, $http, $window) {
-        var base_url = " /api/v1/sensores";
+        var base_url = "/api/v1/sensores";
         function listarRegistros() {
             $http.get(base_url).then(function onSuccess(res) {
                 if (res.status == 200 && res.data.length > 0) {
