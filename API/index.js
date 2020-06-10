@@ -106,6 +106,9 @@ module.exports.register = function (app, db) {
             if (checkFields(nReg)) {
                 console.warn("El registro no está bien formado, mandando 422. Registro recibido: " + nReg);
                 res.sendStatus(422);
+            }else if(!checkDateFormat(nReg.fecha)){
+                console.warn("Formato de fecha incorrecto, mandando estado 422. Registro recibido: " + nReg);
+                res.sendStatus(422);
             }
             else {
                 db.find({ "sensorid": nReg.sensorid, "fecha": nReg.fecha }).toArray((err, sensores) => {
@@ -291,7 +294,7 @@ module.exports.register = function (app, db) {
             res.sendStatus(400);
         }
         else {
-            console.info("Petición DELETE recibida para eliminar registro" + id + "/" + fecha);
+            console.info("Petición DELETE recibida para eliminar registro " + id + "/" + fecha);
 
             if (!checkDateFormat(fecha)) {
                 console.warn("Formato de fecha incorrecto, mandando estdo 422");
