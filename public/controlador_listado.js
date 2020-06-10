@@ -35,14 +35,41 @@ angular.module("calidadAire")
         }
 
         $scope.crearRegistro = function crearRecurso() {
-            $http.post(base_url, $scope.nReg).then((res) => {
+            $http.post(base_url, $scope.nReg).then(function onSuccess(res) {
                 if (res.status == 201) {
                     console.log("Recurso añadido:" + JSON.stringify($scope.nReg, null, 2));
                     $window.alert("Registro añadido satisfactoriamente");
                     listarRegistros();
                 }
+            },
+                function onReject(res) {
 
-            });
+                    if (res.status == 409) {
+
+                        console.log("No se puede añadir un recurso que ya existe: " + res.status);
+                        $window.alert("No se pudo añadir el registro debido a que ya existe uno con el mismo id y fecha");
+
+                    }
+                    else if (res.status == 400) {
+
+                        console.log("Error añadiendo recurso: petición sin cuerpo. Código de estado: " + res.status);
+                        $window.alert("No se pudo añadir el registro debido a que no hay campos que añadir");
+
+                    }
+                    else if (res.status == 422) {
+                        console.log("Error añadiendo recurso: cuerpo mal formado. Código de estado: " + res.status);
+                        $window.alert("No se pudo añadir el registro debido a que faltan uno o más campos de información");
+                    }
+                    else {
+
+                        console.log("Error añadiendo recurso: " + res.status);
+                        $window.alert("No se pudo añadir el recurso");
+
+                    }
+                });
+
+
+
         }
         console.log("Controlador para listar todos los recursos listo.");
         listarRegistros();
