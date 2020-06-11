@@ -1,19 +1,132 @@
-function chart($http,$window,base_url) {
-    var tiempo = {};
-    var datos = {};
-    var sensores = {};
+function chart($http, $window, base_url) {
+    var tiempo = new Set();
+    var datospm10 = {};
+    var datospm2_5 = {};
+    var sensores = new Set();
+    var graph_data_pm10 = {};
+    var graph_data_pm25 = {};
+    var series_datospm10 = [];
+    var series_datospm25 = [];
+    var cats;
 
     $http.get(base_url).then(function onSuccess(res) {
         if (res.status == 200 && res.data.length > 0) {
             console.log("Registros recibidos: " + JSON.stringify(res.data, null, 2));
             var datos_raw = res.data;
 
-            for (reg in datos_raw){
-                sensores.push({"id":reg.sensorid});
-                tiempo.push({"fecha":reg.fecha});
-                //datos.push()
+            for (var i = 0; i < datos_raw.length; i++) {
+                reg = datos_raw[i];
+                if (!sensores.has(reg.sensorid)) {
+                    sensores.add(reg.sensorid);
+                    datospm10[reg.sensorid] = {};
+                    datospm10[reg.sensorid][reg.fecha] = reg.pm10;
+                    datospm2_5[reg.sensorid] = {};
+                    datospm2_5[reg.sensorid][reg.fecha] = reg.pm2_5;
+                    tiempo.add(reg.fecha);
+                }
+                else {
+                    tiempo.add(reg.fecha);
+                    datospm10[reg.sensorid][reg.fecha] = reg.pm10;
+                    datospm2_5[reg.sensorid][reg.fecha] = reg.pm2_5;
+                }
             }
-            console.log("wololo");
+
+            cats = Array.from(tiempo);
+
+            for (var i in datospm10) {
+                var array = [];
+
+                for (var j = 0;j<cats.length;j++) {
+                    var f = cats[j];
+                    if (!datospm10[i][f]) {
+                        array.push(null);
+                    }
+                    else {
+                        array.push(datospm10[i][f])
+                    }
+                }
+                graph_data_pm10[i] = array;
+            }
+            for (var i in datospm2_5) {
+                var array = [];
+                for (var j = 0;j<cats.length;j++) {
+                    var f = cats[j];
+                    if (!datospm2_5[i][f]) {
+                        array.push(null);
+                    }
+                    else {
+                        array.push(datospm2_5[i][f])
+                    }
+                }
+                graph_data_pm25[i] = array;
+            }
+
+            for(var o in graph_data_pm10){
+                series_datospm10.push({name:"Sensor " + o,data:graph_data_pm10[o]});
+            }
+
+            for(var o in graph_data_pm25){
+                series_datospm25.push({name:"Sensor " + o,data:graph_data_pm25[o]});
+            }
+
+            console.log("Datos cargados y procesados para su visualización");
+            Highcharts.chart('grafica1', {
+                chart: {
+                    type: 'line'
+                },
+                title: {
+                    text: 'PM10 por hora'
+                },
+                subtitle: {
+                    text: 'Source: https://opendata.bristol.gov.uk/explore/dataset/luftdaten_pm_bristol/information/'
+                },
+                xAxis: {
+                    categories: cats
+                },
+                yAxis: {
+                    title: {
+                        text: 'PM10'
+                    }
+                },
+                plotOptions: {
+                    line: {
+                        dataLabels: {
+                            enabled: false
+                        },
+                        enableMouseTracking: true
+                    }
+                },
+                series: series_datospm10
+            });
+            
+            Highcharts.chart('grafica2', {
+                chart: {
+                    type: 'line'
+                },
+                title: {
+                    text: 'PM2.5 por hora'
+                },
+                subtitle: {
+                    text: 'Source: https://opendata.bristol.gov.uk/explore/dataset/luftdaten_pm_bristol/information/'
+                },
+                xAxis: {
+                    categories: cats
+                },
+                yAxis: {
+                    title: {
+                        text: 'PM2.5'
+                    }
+                },
+                plotOptions: {
+                    line: {
+                        dataLabels: {
+                            enabled: false
+                        },
+                        enableMouseTracking: true
+                    }
+                },
+                series: series_datospm25
+            });
         }
     },
         function onReject(res) {
@@ -21,42 +134,11 @@ function chart($http,$window,base_url) {
             $window.alert("Ha ocurrido un error al recibir los datos. Vuelva a intentarlo de nuevo");
         });
 
-    
 
-    Highcharts.chart('grafica', {
-        chart: {
-            type: 'line'
-        },
-        title: {
-            text: 'Monthly Average Temperature'
-        },
-        subtitle: {
-            text: 'Source: WorldClimate.com'
-        },
-        xAxis: {
-            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        },
-        yAxis: {
-            title: {
-                text: 'Temperature (°C)'
-            }
-        },
-        plotOptions: {
-            line: {
-                dataLabels: {
-                    enabled: true
-                },
-                enableMouseTracking: false
-            }
-        },
-        series: [{
-            name: 'Tokyo',
-            data: [7.0, 6.9, 9.5, 14.5, 18.4, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
-        }, {
-            name: 'London',
-            data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
-        }]
-    });
+
+
+
+    
 }
 
 angular.module("calidadAire")
@@ -64,7 +146,7 @@ angular.module("calidadAire")
         var base_url = "/api/v1/sensores";
 
         $scope.pintarGrafica = function pintarGrafica() {
-            chart($http,$window,base_url);
+            chart($http, $window, base_url);
         }
 
         console.log("Controlador para visualizar los datos de nuestra API de manera gráfica listo.");
