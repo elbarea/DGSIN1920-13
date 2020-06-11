@@ -53,7 +53,7 @@ module.exports.register = function (app, db) {
                     var pm10 = jsondb[i].fields.pm10;
                     var pm2_5 = jsondb[i].fields.pm2_5;
                     var latlong = jsondb[i].fields.geo_point_2d;
-
+                    fecha = fecha.replace("+01:00","Z");
                     var entrada = {
                         "sensorid": sensorid,
                         "fecha": fecha,
