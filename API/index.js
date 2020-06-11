@@ -104,8 +104,8 @@ module.exports.register = function (app, db) {
             console.info("Petición POST a /sensores con cuerpo: " + JSON.stringify(nReg));
 
             if (checkFields(nReg)) {
-                console.warn("El registro no está bien formado, mandando 422. Registro recibido: " + nReg);
-                res.sendStatus(422);
+                console.warn("El registro no está bien formado, mandando 400. Registro recibido: " + nReg);
+                res.sendStatus(400);
             }else if(!checkDateFormat(nReg.fecha)){
                 console.warn("Formato de fecha incorrecto, mandando estado 422. Registro recibido: " + nReg);
                 res.sendStatus(422);
@@ -330,8 +330,13 @@ module.exports.register = function (app, db) {
         var id = req.params.id;
         var fecha = req.params.fecha;
         var nReg = req.body;
+
         if (!id || !fecha) {
             console.warn("Petición PUT sobre recurso específico sin id o sin fecha");
+            res.sendStatus(400);
+        }
+        else if(id != req.body.sensorid){
+            console.warn("El id de la URL es distinto al del cuerpo");
             res.sendStatus(400);
         }
         else if (isEmpty(nReg)) {
@@ -345,8 +350,8 @@ module.exports.register = function (app, db) {
             var b = checkFields(nReg);
             if (b) {
                 console.warn("El cuerpo de la petición no está bien formado: " + JSON.stringify(nReg));
-                console.warn("Mandando estado 422");
-                res.sendStatus(422);
+                console.warn("Mandando estado 400");
+                res.sendStatus(400);
             }
             else {
                 if (!c1 || !c2) {
