@@ -85,7 +85,7 @@ module.exports.register = function (app, db) {
             }
             else {
                 var sin_id = formatSensores(sensores);
-                console.debug("Mandando registros " + JSON.stringify(sensores, null, 2));
+                //console.debug("Mandando registros " + JSON.stringify(sensores, null, 2));
                 res.send(sin_id);
 
             }
