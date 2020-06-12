@@ -36,7 +36,7 @@ function chart($http, $window, base_url) {
             for (var i in datospm10) {
                 var array = [];
 
-                for (var j = 0;j<cats.length;j++) {
+                for (var j = 0; j < cats.length; j++) {
                     var f = cats[j];
                     if (!datospm10[i][f]) {
                         array.push(null);
@@ -49,7 +49,7 @@ function chart($http, $window, base_url) {
             }
             for (var i in datospm2_5) {
                 var array = [];
-                for (var j = 0;j<cats.length;j++) {
+                for (var j = 0; j < cats.length; j++) {
                     var f = cats[j];
                     if (!datospm2_5[i][f]) {
                         array.push(null);
@@ -61,12 +61,12 @@ function chart($http, $window, base_url) {
                 graph_data_pm25[i] = array;
             }
 
-            for(var o in graph_data_pm10){
-                series_datospm10.push({name:"Sensor " + o,data:graph_data_pm10[o]});
+            for (var o in graph_data_pm10) {
+                series_datospm10.push({ name: "Sensor " + o, data: graph_data_pm10[o] });
             }
 
-            for(var o in graph_data_pm25){
-                series_datospm25.push({name:"Sensor " + o,data:graph_data_pm25[o]});
+            for (var o in graph_data_pm25) {
+                series_datospm25.push({ name: "Sensor " + o, data: graph_data_pm25[o] });
             }
 
             console.log("Datos cargados y procesados para su visualización");
@@ -75,7 +75,8 @@ function chart($http, $window, base_url) {
                     type: 'line'
                 },
                 title: {
-                    text: 'PM10 por hora'
+                    text: 'PM<sub>10</sub> por hora',
+                    useHTML: true
                 },
                 subtitle: {
                     text: 'Source: https://opendata.bristol.gov.uk/explore/dataset/luftdaten_pm_bristol/information/'
@@ -85,7 +86,8 @@ function chart($http, $window, base_url) {
                 },
                 yAxis: {
                     title: {
-                        text: 'PM10'
+                        text: 'PM<sub>10</sub>',
+                        useHTML: true
                     }
                 },
                 plotOptions: {
@@ -98,13 +100,14 @@ function chart($http, $window, base_url) {
                 },
                 series: series_datospm10
             });
-            
+
             Highcharts.chart('grafica2', {
                 chart: {
                     type: 'line'
                 },
                 title: {
-                    text: 'PM2.5 por hora'
+                    text: 'PM<sub>2.5</sub> por hora',
+                    useHTML: true
                 },
                 subtitle: {
                     text: 'Source: https://opendata.bristol.gov.uk/explore/dataset/luftdaten_pm_bristol/information/'
@@ -114,7 +117,8 @@ function chart($http, $window, base_url) {
                 },
                 yAxis: {
                     title: {
-                        text: 'PM2.5'
+                        text: 'PM<sub>2.5</sub> por hora',
+                        useHTML: true
                     }
                 },
                 plotOptions: {
@@ -138,17 +142,17 @@ function chart($http, $window, base_url) {
 
 
 
-    
+
 }
 
 angular.module("calidadAire")
     .controller("controlador_analytics", ["$scope", "$http", "$window", function ($scope, $http, $window) {
         var base_url = "/api/v1/sensores";
 
-        $scope.pintarGrafica = function pintarGrafica() {
+        function pintarGrafica() {
             chart($http, $window, base_url);
         }
 
         console.log("Controlador para visualizar los datos de nuestra API de manera gráfica listo.");
-        $scope.pintarGrafica();
+        pintarGrafica();
     }]);
