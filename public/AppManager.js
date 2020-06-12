@@ -10,16 +10,16 @@ angular.module("calidadAire", ["ngRoute"]).config(function ($routeProvider) {
                 controller: "controlador_listado"
             })
         .when("/analytics",
+        {
+            templateUrl: "analytics.html",
+            controller: "controlador_analytics"
+        })
+        .when("/integrations",
             {
-                templateUrl:"analytics.html"
-            }
+                templateUrl:"integrations.html",
+                controller:"controlador_integrations"
+            })
 
-        ).when("/analytics/sensores",
-            {
-                templateUrl:"analytics_sensores.html",
-                controller:"controlador_analytics"
-            }
-        )
         .when("/sensor/:id",
             {
                 templateUrl: "sensor.html",
